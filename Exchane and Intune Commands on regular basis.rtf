@@ -1,0 +1,62 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Oblique;\f1\fmodern\fcharset0 Courier-Oblique;}
+{\colortbl;\red255\green255\blue255;\red0\green51\blue102;}
+{\*\expandedcolortbl;;\csgenericrgb\c0\c20000\c40000;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\i\fs72 \cf2 Exchange Online & Intune \'96 PowerShell Admin Cheat Sheet\
+Exchange Online \'96 Install & Connect\
+\pard\pardeftab720\partightenfactor0
+
+\f1 \cf0 Install-Module ExchangeOnlineManagement -Scope AllUsers\
+Connect-ExchangeOnline\
+Connect-IPPSSession\
+\pard\pardeftab720\partightenfactor0
+
+\f0 \cf2 Exchange Online \'96 Common Tasks\
+\pard\pardeftab720\partightenfactor0
+
+\f1 \cf0 Get-EXOMailbox -ResultSize Unlimited | Select DisplayName,PrimarySmtpAddress,RecipientTypeDetails\
+New-Mailbox -Name "Support Shared" -DisplayName "Support Shared" -Shared\
+Add-MailboxPermission -Identity "Support Shared" -User alice@contoso.com -AccessRights FullAccess -AutoMapping:$Add-RecipientPermission -Identity "Support Shared" -Trustee alice@contoso.com -AccessRights SendAs\
+Get-MessageTrace -Sender sender@ext.com -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date)\
+Get-MessageTrace -MessageId "<someid@sender.com>" -StartDate (Get-Date).AddDays(-7) -EndDate (Get-Date)\
+\pard\pardeftab720\partightenfactor0
+
+\f0 \cf2 Intune \'96 Install & Connect\
+\pard\pardeftab720\partightenfactor0
+
+\f1 \cf0 Install-Module Microsoft.Graph -Scope CurrentUser\
+Connect-MgGraph -Scopes "DeviceManagement.ReadWrite.All, Group.ReadWrite.All, User.Read.All"\
+Select-MgProfile -Name beta\
+\pard\pardeftab720\partightenfactor0
+
+\f0 \cf2 Intune \'96 Devices & Actions\
+\pard\pardeftab720\partightenfactor0
+
+\f1 \cf0 Get-MgDeviceManagementManagedDevice -All | Select DeviceName,OperatingSystem,ComplianceState,LastSyncDateTime\
+Invoke-MgDeviceManagementManagedDeviceSyncDevice -ManagedDeviceId <Id>\
+Invoke-MgDeviceManagementManagedDeviceWipe -ManagedDeviceId <Id>\
+Invoke-MgDeviceManagementManagedDeviceRetire -ManagedDeviceId <Id>\
+\pard\pardeftab720\partightenfactor0
+
+\f0 \cf2 Intune \'96 Policies & Reporting\
+\pard\pardeftab720\partightenfactor0
+
+\f1 \cf0 $pol = New-MgDeviceManagementDeviceCompliancePolicy -BodyParameter @\{\
+"@odata.type" = "#microsoft.graph.windows10CompliancePolicy"\
+displayName = "Windows Baseline - Secure"\
+passwordRequired = $true\
+bitLockerEnabled = $true\
+\}\
+New-MgDeviceManagementDeviceCompliancePolicyAssignment -DeviceCompliancePolicyId $pol.Id -BodyParameter @\{\
+target = @\{\
+"@odata.type"="#microsoft.graph.groupAssignmentTarget"\
+groupId = "<AAD-GROUP-ID>"\
+\}\
+\}\
+Get-MgDeviceManagementManagedDevice -All |\
+Select DeviceName,ComplianceState,UserDisplayName,LastSyncDateTime |\
+Export-Csv C:\\Reports\\Intune_Compliance.csv -NoTypeInformation}
